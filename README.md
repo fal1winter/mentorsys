@@ -1,5 +1,42 @@
 # 导师推荐系统 - Mentor Recommendation System
 
+## 快速部署（Docker Compose）
+
+```bash
+# 1. 克隆代码
+git clone git@github.com:fal1winter/mentorsys.git
+cd mentorsys
+
+# 2. 创建配置文件
+cp .env.example .env
+vim .env   # 填入实际值
+```
+
+`.env` 内容：
+```
+LLM_API_KEY=你的实际key
+LLM_BASE_URL=https://openrouter.fans/v1/chat/completions
+LLM_MODEL=deepseek-chat
+APP_DOMAIN=你的域名
+APP_BASE_URL=http://你的域名
+```
+
+```bash
+# 3. 启动所有服务（首次构建较慢）
+docker compose up -d
+
+# 4. 等所有服务变为 healthy
+docker compose ps
+
+# 5. 重建向量索引
+pip install pymysql requests
+python deploy/reindex.py
+```
+
+服务端口：前端 `80`，后端 `7020`，语义服务 `5050`，MySQL `3306`，Redis `6379`，Milvus `19530`
+
+---
+
 ## 项目状态：前后端完整实现 ✅✅
 
 **后端**: Spring Boot 2.4.3 - 8个完整系统 ✅
@@ -301,16 +338,5 @@ java -jar /home/sun/mentor-system/backend/target/mentor-system.jar
 **当前状态**: 前后端核心功能100%完成，可直接部署上线 ✅✅
 
 **项目地址**: `/home/sun/mentor-system/`
-**域名**: mentor.papervote.top（待配置）
+**域名**: mentor.papervote.top
 **开发时间**: 2026-02-01
-在新主机上的部署步骤：                                                                                    
-                                                                                                            
-  git clone git@github.com:fal1winter/mentorsys.git
-  cd mentorsys                                                                                              
-  echo "LLM_API_KEY=你的key" > .env                                                                         
-  docker compose up -d                                                                                      
-  # 等服务全部 healthy 后
-  pip install pymysql requests
-  python deploy/reindex.py
-
-  需要注意的是后端镜像会在容器内用 Maven 编译，第一次构建会比较慢。
