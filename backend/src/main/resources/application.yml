@@ -95,7 +95,7 @@ shiro:
   session-timeout: 1800000  # 30 minutes in milliseconds
   cookie:
     name: MENTOR_SESSION
-    domain: mentor.papervote.top
+    domain: ${APP_DOMAIN:mentor.papervote.top}
     path: /
     http-only: true
     max-age: 1800  # 30 minutes in seconds
@@ -183,4 +183,4 @@ app:
   name: Mentor Recommendation System
   version: 1.0.0
   description: Mentor-Student Matching and Recommendation Platform
-  base-url: http://mentor.papervote.top
+  base-url: ${APP_BASE_URL:http://mentor.papervote.top}

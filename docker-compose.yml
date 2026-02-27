@@ -85,6 +85,8 @@ services:
       SPRING_REDIS_HOST: redis
       SEMANTIC_SERVICE_URL: http://semantic:5050
       LLM_API_KEY: ${LLM_API_KEY:-your_api_key_here}
+      APP_DOMAIN: ${APP_DOMAIN:-mentor.papervote.top}
+      APP_BASE_URL: ${APP_BASE_URL:-http://mentor.papervote.top}
     ports:
       - "7020:7020"
     depends_on:
