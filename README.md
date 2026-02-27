@@ -303,3 +303,14 @@ java -jar /home/sun/mentor-system/backend/target/mentor-system.jar
 **项目地址**: `/home/sun/mentor-system/`
 **域名**: mentor.papervote.top（待配置）
 **开发时间**: 2026-02-01
+在新主机上的部署步骤：                                                                                    
+                                                                                                            
+  git clone git@github.com:fal1winter/mentorsys.git
+  cd mentorsys                                                                                              
+  echo "LLM_API_KEY=你的key" > .env                                                                         
+  docker compose up -d                                                                                      
+  # 等服务全部 healthy 后
+  pip install pymysql requests
+  python deploy/reindex.py
+
+  需要注意的是后端镜像会在容器内用 Maven 编译，第一次构建会比较慢。
