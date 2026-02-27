@@ -22,13 +22,18 @@ APP_BASE_URL=http://你的域名
 ```
 
 ```bash
-# 3. 启动所有服务（首次构建较慢）
+# 3. 建议先单独启动 Milvus 三件套，确认正常后再启动全部服务
+docker compose up -d etcd minio milvus
+docker compose ps        # 等待三个服务都变为 healthy
+docker compose logs milvus  # 如有问题查看日志
+
+# 4. 启动所有服务（首次构建较慢）
 docker compose up -d
 
-# 4. 等所有服务变为 healthy
+# 5. 等所有服务变为 healthy
 docker compose ps
 
-# 5. 重建向量索引
+# 6. 重建向量索引
 pip install pymysql requests
 python deploy/reindex.py
 ```
