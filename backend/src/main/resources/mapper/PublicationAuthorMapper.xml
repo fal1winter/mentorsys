@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.PublicationAuthorMapper">
+
+    <!-- Result Map for PublicationAuthor -->
+    <resultMap id="PublicationAuthorResultMap" type="com.mentor.entity.PublicationAuthor">
+        <id property="id" column="id"/>
+        <result property="publicationId" column="publication_id"/>
+        <result property="scholarId" column="scholar_id"/>
+        <result property="authorOrder" column="author_order"/>
+        <result property="isCorresponding" column="is_corresponding"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- Insert Publication Author -->
+    <insert id="insertPublicationAuthor" parameterType="com.mentor.entity.PublicationAuthor" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO publication_authors (
+            publication_id, scholar_id, author_order, is_corresponding
+        ) VALUES (
+            #{publicationId}, #{scholarId}, #{authorOrder}, #{isCorresponding}
+        )
+    </insert>
+
+    <!-- Delete Publication Author by ID -->
+    <delete id="deletePublicationAuthorById">
+        DELETE FROM publication_authors WHERE id = #{id}
+    </delete>
+
+    <!-- Delete All Authors for a Publication -->
+    <delete id="deleteAuthorsByPublicationId">
+        DELETE FROM publication_authors WHERE publication_id = #{publicationId}
+    </delete>
+
+    <!-- Delete Specific Author from Publication -->
+    <delete id="deleteAuthorFromPublication">
+        DELETE FROM publication_authors
+        WHERE publication_id = #{publicationId} AND scholar_id = #{scholarId}
+    </delete>
+
+    <!-- Get Publication Author by ID -->
+    <select id="getPublicationAuthorById" resultMap="PublicationAuthorResultMap">
+        SELECT * FROM publication_authors WHERE id = #{id}
+    </select>
+
+    <!-- Get All Authors for a Publication -->
+    <select id="getAuthorsByPublicationId" resultMap="PublicationAuthorResultMap">
+        SELECT * FROM publication_authors
+        WHERE publication_id = #{publicationId}
+        ORDER BY author_order ASC
+    </select>
+
+    <!-- Get All Publications for a Scholar -->
+    <select id="getPublicationsByScholarId" resultMap="PublicationAuthorResultMap">
+        SELECT * FROM publication_authors
+        WHERE scholar_id = #{scholarId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- Get Publication Author Relationship -->
+    <select id="getPublicationAuthor" resultMap="PublicationAuthorResultMap">
+        SELECT * FROM publication_authors
+        WHERE publication_id = #{publicationId} AND scholar_id = #{scholarId}
+    </select>
+
+    <!-- Update Publication Author -->
+    <update id="updatePublicationAuthor" parameterType="com.mentor.entity.PublicationAuthor">
+        UPDATE publication_authors
+        <set>
+            <if test="authorOrder != null">author_order = #{authorOrder},</if>
+            <if test="isCorresponding != null">is_corresponding = #{isCorresponding},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

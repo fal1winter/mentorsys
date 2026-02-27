@@ -1,0 +1,186 @@
+server:
+  port: 7020
+  servlet:
+    context-path: /api
+  tomcat:
+    max-http-form-post-size: 100MB
+
+spring:
+  application:
+    name: mentor-system
+
+  # MySQL DataSource Configuration
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/mentor_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:22222222}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=2000
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        reset-enable: false
+        login-username: admin
+        login-password: admin
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      uri: mongodb://127.0.0.1:27017/mentor_system
+      auto-index-creation: true
+
+  # Redis Configuration
+  redis:
+    host: ${SPRING_REDIS_HOST:127.0.0.1}
+    port: 6379
+    database: 0
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 20
+        min-idle: 5
+        max-wait: 3000
+
+  # Jackson Configuration
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+# MyBatis Configuration
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.mentor.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Shiro Configuration
+shiro:
+  login-url: /auth/login
+  success-url: /
+  unauthorized-url: /auth/unauthorized
+  session-timeout: 1800000  # 30 minutes in milliseconds
+  cookie:
+    name: MENTOR_SESSION
+    domain: mentor.papervote.top
+    path: /
+    http-only: true
+    max-age: 1800  # 30 minutes in seconds
+
+# LLM Configuration (OpenRouter API)
+llm:
+  openrouter:
+    api-key: ${LLM_API_KEY:your_api_key_here}
+    base-url: https://openrouter.fans/v1/chat/completions
+    model: deepseek-chat
+    temperature: 0.7
+    max-tokens: 1000
+    timeout: 30000  # 30 seconds
+
+# Semantic Search Service Configuration
+semantic:
+  service-url: ${SEMANTIC_SERVICE_URL:http://localhost:5050}
+  timeout: 10000  # 10 seconds
+
+# Milvus Configuration
+milvus:
+  host: 127.0.0.1
+  port: 19530
+  database: mentor_system
+  collections:
+    mentor-profiles: mentor_profiles
+    student-profiles: student_profiles
+  embedding:
+    dimension: 1536  # OpenAI embedding dimension
+    metric-type: COSINE
+    index-type: IVF_FLAT
+    nlist: 1024
+
+# Recommendation Engine Configuration
+recommendation:
+  min-history-count: 30  # Minimum browsing history records before analysis
+  analysis-trigger-count: 25  # Trigger new analysis after this many new records
+  cache-ttl: 3600  # Cache TTL in seconds (1 hour)
+  weights:
+    # Student finding mentor weights
+    student:
+      research-match: 0.40
+      quality-score: 0.25
+      availability: 0.20
+      workload: 0.15
+    # Mentor finding student weights
+    mentor:
+      research-match: 0.35
+      academic-ability: 0.30
+      background-match: 0.20
+      time-match: 0.15
+
+# WebSocket Configuration
+websocket:
+  endpoint: /ws
+  allowed-origins: "*"
+  message-size-limit: 8192
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.mentor: DEBUG
+    org.springframework.web: INFO
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/mentor-system.log
+    max-size: 10MB
+    max-history: 30
+
+# Swagger/Knife4j Configuration
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+  basic:
+    enable: false
+  production: false
+
+# Application Custom Configuration
+app:
+  name: Mentor Recommendation System
+  version: 1.0.0
+  description: Mentor-Student Matching and Recommendation Platform
+  base-url: http://mentor.papervote.top

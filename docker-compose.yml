@@ -1,0 +1,111 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mentor-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 22222222
+      MYSQL_DATABASE: mentor_system
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./deploy/mysql/init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p22222222"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: mentor-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  milvus:
+    image: milvusdb/milvus:v2.4.0
+    container_name: mentor-milvus
+    restart: unless-stopped
+    command: milvus run standalone
+    environment:
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
+      COMMON_STORAGETYPE: local
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  semantic:
+    build: ./deploy/semantic-search
+    container_name: mentor-semantic
+    restart: unless-stopped
+    environment:
+      HF_ENDPOINT: https://hf-mirror.com
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    ports:
+      - "5050:5050"
+    depends_on:
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  backend:
+    build: ./backend
+    container_name: mentor-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mentor_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 22222222
+      SPRING_REDIS_HOST: redis
+      SEMANTIC_SERVICE_URL: http://semantic:5050
+      LLM_API_KEY: ${LLM_API_KEY:-your_api_key_here}
+    ports:
+      - "7020:7020"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      semantic:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: mentor-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  redis_data:
+  milvus_data:
+  huggingface_cache:

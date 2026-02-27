@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.ChatMessageMapper">
+
+    <resultMap id="ChatMessageResultMap" type="com.mentor.entity.ChatMessage">
+        <id property="id" column="id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="mentorId" column="mentor_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="senderType" column="sender_type"/>
+        <result property="messageType" column="message_type"/>
+        <result property="content" column="content"/>
+        <result property="fileUrl" column="file_url"/>
+        <result property="isRead" column="is_read"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insertChatMessage" parameterType="com.mentor.entity.ChatMessage" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chat_messages (
+            application_id, student_id, mentor_id, sender_id, sender_type, message_type, content,
+            file_url, is_read, create_time
+        ) VALUES (
+            #{applicationId}, #{studentId}, #{mentorId}, #{senderId}, #{senderType}, #{messageType}, #{content},
+            #{fileUrl}, #{isRead}, #{createTime}
+        )
+    </insert>
+
+    <select id="getMessagesByApplicationId" resultMap="ChatMessageResultMap">
+        SELECT * FROM chat_messages
+        WHERE application_id = #{applicationId}
+        ORDER BY create_time ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <update id="markMessageAsRead">
+        UPDATE chat_messages SET is_read = TRUE WHERE id = #{id}
+    </update>
+
+    <select id="countUnreadMessages" resultType="int">
+        SELECT COUNT(*) FROM chat_messages
+        WHERE application_id = #{applicationId}
+        AND sender_type != #{receiverType}
+        AND is_read = FALSE
+    </select>
+
+    <!-- Get messages by student and mentor IDs -->
+    <select id="getMessagesByStudentAndMentor" resultMap="ChatMessageResultMap">
+        SELECT * FROM chat_messages
+        WHERE student_id = #{studentId}
+        AND mentor_id = #{mentorId}
+        ORDER BY create_time ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count unread messages by student and mentor IDs -->
+    <select id="countUnreadMessagesByStudentAndMentor" resultType="int">
+        SELECT COUNT(*) FROM chat_messages
+        WHERE student_id = #{studentId}
+        AND mentor_id = #{mentorId}
+        AND sender_type != #{receiverType}
+        AND is_read = FALSE
+    </select>
+
+    <!-- Get conversation list for a user -->
+    <select id="getConversationsByUserId" resultType="java.util.Map">
+        SELECT 
+            cm.student_id as studentId,
+            cm.mentor_id as mentorId,
+            ANY_VALUE(CASE 
+                WHEN #{userType} = 'STUDENT' THEN m.name
+                ELSE s.name
+            END) as partnerName,
+            CASE 
+                WHEN #{userType} = 'STUDENT' THEN 'MENTOR'
+                ELSE 'STUDENT'
+            END as partnerType,
+            (SELECT content FROM chat_messages cm2 
+             WHERE cm2.student_id = cm.student_id AND cm2.mentor_id = cm.mentor_id 
+             ORDER BY cm2.create_time DESC LIMIT 1) as lastMessage,
+            (SELECT create_time FROM chat_messages cm2 
+             WHERE cm2.student_id = cm.student_id AND cm2.mentor_id = cm.mentor_id 
+             ORDER BY cm2.create_time DESC LIMIT 1) as lastMessageTime,
+            (SELECT COUNT(*) FROM chat_messages cm3 
+             WHERE cm3.student_id = cm.student_id AND cm3.mentor_id = cm.mentor_id 
+             AND cm3.sender_type != #{userType} AND cm3.is_read = FALSE) as unreadCount
+        FROM chat_messages cm
+        LEFT JOIN mentors m ON cm.mentor_id = m.id
+        LEFT JOIN students s ON cm.student_id = s.id
+        WHERE cm.student_id IS NOT NULL AND cm.mentor_id IS NOT NULL
+            AND
+            <if test="userType == 'STUDENT'">
+                s.user_id = #{userId}
+            </if>
+            <if test="userType == 'MENTOR'">
+                m.user_id = #{userId}
+            </if>
+        GROUP BY cm.student_id, cm.mentor_id
+        ORDER BY lastMessageTime DESC
+    </select>
+
+    <!-- Count total unread messages for a user -->
+    <select id="countTotalUnreadMessages" resultType="int">
+        SELECT COUNT(*) FROM chat_messages cm
+        LEFT JOIN students s ON cm.student_id = s.id
+        LEFT JOIN mentors m ON cm.mentor_id = m.id
+        WHERE cm.student_id IS NOT NULL AND cm.mentor_id IS NOT NULL
+            AND
+            <if test="userType == 'STUDENT'">
+                s.user_id = #{userId}
+            </if>
+            <if test="userType == 'MENTOR'">
+                m.user_id = #{userId}
+            </if>
+            AND cm.sender_type != #{userType}
+            AND cm.is_read = FALSE
+    </select>
+
+</mapper>

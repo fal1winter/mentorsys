@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.AuthMapper">
+
+    <!-- Result Map for User -->
+    <resultMap id="UserResultMap" type="com.mentor.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="salt" column="salt"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="userType" column="user_type"/>
+        <result property="status" column="status"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert User -->
+    <insert id="insertUser" parameterType="com.mentor.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, salt, email, phone, user_type, status, create_time, update_time)
+        VALUES (#{username}, #{password}, #{salt}, #{email}, #{phone}, #{userType}, #{status}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- Get User by Username -->
+    <select id="getUserByUsername" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <!-- Get User by Email -->
+    <select id="getUserByEmail" resultMap="UserResultMap">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- Get User by ID -->
+    <select id="getUserById" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{userId}
+    </select>
+
+    <!-- Update Last Login Time -->
+    <update id="updateLastLoginTime">
+        UPDATE users SET last_login_time = #{lastLoginTime} WHERE id = #{userId}
+    </update>
+
+    <!-- Update Password -->
+    <update id="updatePassword">
+        UPDATE users SET password = #{password}, salt = #{salt}, update_time = NOW() WHERE id = #{userId}
+    </update>
+
+    <!-- Update User Status -->
+    <update id="updateUserStatus">
+        UPDATE users SET status = #{status}, update_time = NOW() WHERE id = #{userId}
+    </update>
+
+    <!-- Update User Profile -->
+    <update id="updateUserProfile" parameterType="com.mentor.entity.User">
+        UPDATE users
+        <set>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="username != null">username = #{username},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Get All Users with Pagination -->
+    <select id="getAllUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Total Users -->
+    <select id="countUsers" resultType="int">
+        SELECT COUNT(*) FROM users
+    </select>
+
+    <!-- Get Role by Name -->
+    <select id="getRoleByName" resultType="com.mentor.entity.Role">
+        SELECT * FROM roles WHERE role_name = #{roleName}
+    </select>
+
+    <!-- Insert User Role -->
+    <insert id="insertUserRole">
+        INSERT INTO user_roles (user_id, role_id, create_time)
+        VALUES (#{userId}, #{roleId}, NOW())
+    </insert>
+
+    <!-- Get User Roles -->
+    <select id="getUserRoles" resultType="com.mentor.entity.Role">
+        SELECT r.* FROM roles r
+        INNER JOIN user_roles ur ON r.id = ur.role_id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <!-- Get User Permissions -->
+    <select id="getUserPermissions" resultType="com.mentor.entity.Permission">
+        SELECT DISTINCT p.* FROM permissions p
+        INNER JOIN role_permissions rp ON p.id = rp.permission_id
+        INNER JOIN user_roles ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.BrowsingHistoryMapper">
+
+    <resultMap id="BrowsingHistoryResultMap" type="com.mentor.entity.BrowsingHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="targetType" column="target_type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="actionType" column="action_type"/>
+        <result property="durationSeconds" column="duration_seconds"/>
+        <result property="additionalData" column="additional_data"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insertBrowsingHistory" parameterType="com.mentor.entity.BrowsingHistory">
+        INSERT INTO browsing_history (
+            user_id, user_type, target_type, target_id, action_type,
+            duration_seconds, additional_data, create_time
+        ) VALUES (
+            #{userId}, #{userType}, #{targetType}, #{targetId}, #{actionType},
+            #{durationSeconds}, #{additionalData}, #{createTime}
+        )
+    </insert>
+
+    <select id="getUserHistory" resultMap="BrowsingHistoryResultMap">
+        SELECT * FROM browsing_history
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="getRecentMentorViews" resultMap="BrowsingHistoryResultMap">
+        SELECT * FROM browsing_history
+        WHERE user_id = #{userId}
+        AND target_type = 'mentor'
+        AND action_type = 'view'
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countUserHistory" resultType="int">
+        SELECT COUNT(*) FROM browsing_history WHERE user_id = #{userId}
+    </select>
+
+</mapper>

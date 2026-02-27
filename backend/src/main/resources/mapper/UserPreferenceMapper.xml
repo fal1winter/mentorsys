@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.UserPreferenceMapper">
+
+    <resultMap id="UserPreferenceResultMap" type="com.mentor.entity.UserPreference">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userType" column="user_type"/>
+        <result property="preferenceText" column="preference_text"/>
+        <result property="preferenceKeywords" column="preference_keywords"/>
+        <result property="preferenceTopics" column="preference_topics"/>
+        <result property="lastAnalyzedLogCount" column="last_analyzed_log_count"/>
+        <result property="currentLogCount" column="current_log_count"/>
+        <result property="analysisCount" column="analysis_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insertUserPreference" parameterType="com.mentor.entity.UserPreference" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_preferences (
+            user_id, user_type, preference_text, preference_keywords, preference_topics,
+            last_analyzed_log_count, current_log_count, analysis_count, create_time, update_time
+        ) VALUES (
+            #{userId}, #{userType}, #{preferenceText}, #{preferenceKeywords}, #{preferenceTopics},
+            #{lastAnalyzedLogCount}, #{currentLogCount}, #{analysisCount}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="updateUserPreference" parameterType="com.mentor.entity.UserPreference">
+        UPDATE user_preferences
+        SET preference_text = #{preferenceText},
+            preference_keywords = #{preferenceKeywords},
+            preference_topics = #{preferenceTopics},
+            last_analyzed_log_count = #{lastAnalyzedLogCount},
+            current_log_count = #{currentLogCount},
+            analysis_count = #{analysisCount},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <select id="getUserPreferenceByUserId" resultMap="UserPreferenceResultMap">
+        SELECT * FROM user_preferences WHERE user_id = #{userId} LIMIT 1
+    </select>
+
+</mapper>

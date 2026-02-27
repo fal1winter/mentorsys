@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.ScholarMapper">
+
+    <!-- Result Map for Scholar -->
+    <resultMap id="ScholarResultMap" type="com.mentor.entity.Scholar">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="institution" column="institution"/>
+        <result property="bio" column="bio"/>
+        <result property="email" column="email"/>
+        <result property="homepage" column="homepage"/>
+        <result property="hIndex" column="h_index"/>
+        <result property="citationCount" column="citation_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Scholar -->
+    <insert id="insertScholar" parameterType="com.mentor.entity.Scholar" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO scholars (
+            name, avatar_url, institution, bio, email, homepage, h_index, citation_count
+        ) VALUES (
+            #{name}, #{avatarUrl}, #{institution}, #{bio}, #{email}, #{homepage}, #{hIndex}, #{citationCount}
+        )
+    </insert>
+
+    <!-- Update Scholar -->
+    <update id="updateScholar" parameterType="com.mentor.entity.Scholar">
+        UPDATE scholars
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="institution != null">institution = #{institution},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="homepage != null">homepage = #{homepage},</if>
+            <if test="hIndex != null">h_index = #{hIndex},</if>
+            <if test="citationCount != null">citation_count = #{citationCount},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Scholar -->
+    <delete id="deleteScholarById">
+        DELETE FROM scholars WHERE id = #{id}
+    </delete>
+
+    <!-- Get Scholar by ID -->
+    <select id="getScholarById" resultMap="ScholarResultMap">
+        SELECT * FROM scholars WHERE id = #{id}
+    </select>
+
+    <!-- Get All Scholars -->
+    <select id="getAllScholars" resultMap="ScholarResultMap">
+        SELECT * FROM scholars
+        ORDER BY name ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Search Scholars -->
+    <select id="searchScholars" resultMap="ScholarResultMap">
+        SELECT * FROM scholars
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR institution LIKE CONCAT('%', #{keyword}, '%')
+           OR email LIKE CONCAT('%', #{keyword}, '%')
+           OR bio LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY name ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count All Scholars -->
+    <select id="countScholars" resultType="int">
+        SELECT COUNT(*) FROM scholars
+    </select>
+
+    <!-- Count Search Results -->
+    <select id="countSearchResults" resultType="int">
+        SELECT COUNT(*) FROM scholars
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR institution LIKE CONCAT('%', #{keyword}, '%')
+           OR email LIKE CONCAT('%', #{keyword}, '%')
+           OR bio LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <!-- Get Scholars by Publication ID -->
+    <select id="getScholarsByPublicationId" resultMap="ScholarResultMap">
+        SELECT s.* FROM scholars s
+        INNER JOIN publication_authors pa ON s.id = pa.scholar_id
+        WHERE pa.publication_id = #{publicationId}
+        ORDER BY pa.author_order ASC
+    </select>
+
+</mapper>

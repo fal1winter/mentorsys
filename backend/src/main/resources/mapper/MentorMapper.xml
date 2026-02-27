@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.MentorMapper">
+
+    <!-- Result Map for Mentor -->
+    <resultMap id="MentorResultMap" type="com.mentor.entity.Mentor">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="title" column="title"/>
+        <result property="institution" column="institution"/>
+        <result property="department" column="department"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="officeLocation" column="office_location"/>
+        <result property="researchAreas" column="research_areas"/>
+        <result property="keywords" column="keywords"/>
+        <result property="bio" column="bio"/>
+        <result property="groupDirection" column="group_direction"/>
+        <result property="expectedStudentQualities" column="expected_student_qualities"/>
+        <result property="mentoringStyle" column="mentoring_style"/>
+        <result property="availablePositions" column="available_positions"/>
+        <result property="fundingStatus" column="funding_status"/>
+        <result property="collaborationOpportunities" column="collaboration_opportunities"/>
+        <result property="educationBackground" column="education_background"/>
+        <result property="avatar" column="avatar"/>
+        <result property="homepageUrl" column="homepage_url"/>
+        <result property="googleScholarUrl" column="google_scholar_url"/>
+        <result property="acceptingStudents" column="accepting_students"/>
+        <result property="maxStudents" column="max_students"/>
+        <result property="currentStudents" column="current_students"/>
+        <result property="ratingAvg" column="rating_avg"/>
+        <result property="ratingCount" column="rating_count"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="status" column="status"/>
+        <result property="isVerified" column="is_verified"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Mentor -->
+    <insert id="insertMentor" parameterType="com.mentor.entity.Mentor" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mentors (
+            user_id, name, title, institution, department, email, phone, office_location,
+            research_areas, keywords, bio, education_background, avatar, homepage_url,
+            google_scholar_url, accepting_students, max_students, current_students,
+            rating_avg, rating_count, view_count, status, is_verified, create_time, update_time
+        ) VALUES (
+            #{userId}, #{name}, #{title}, #{institution}, #{department}, #{email}, #{phone}, #{officeLocation},
+            #{researchAreas}, #{keywords}, #{bio}, #{educationBackground}, #{avatar}, #{homepageUrl},
+            #{googleScholarUrl}, #{acceptingStudents}, #{maxStudents}, #{currentStudents},
+            #{ratingAvg}, #{ratingCount}, #{viewCount}, #{status}, #{isVerified}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- Update Mentor -->
+    <update id="updateMentor" parameterType="com.mentor.entity.Mentor">
+        UPDATE mentors
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="institution != null">institution = #{institution},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="officeLocation != null">office_location = #{officeLocation},</if>
+            <if test="researchAreas != null">research_areas = #{researchAreas},</if>
+            <if test="keywords != null">keywords = #{keywords},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="groupDirection != null">group_direction = #{groupDirection},</if>
+            <if test="expectedStudentQualities != null">expected_student_qualities = #{expectedStudentQualities},</if>
+            <if test="mentoringStyle != null">mentoring_style = #{mentoringStyle},</if>
+            <if test="availablePositions != null">available_positions = #{availablePositions},</if>
+            <if test="fundingStatus != null">funding_status = #{fundingStatus},</if>
+            <if test="collaborationOpportunities != null">collaboration_opportunities = #{collaborationOpportunities},</if>
+            <if test="educationBackground != null">education_background = #{educationBackground},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="homepageUrl != null">homepage_url = #{homepageUrl},</if>
+            <if test="googleScholarUrl != null">google_scholar_url = #{googleScholarUrl},</if>
+            <if test="acceptingStudents != null">accepting_students = #{acceptingStudents},</if>
+            <if test="maxStudents != null">max_students = #{maxStudents},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="isVerified != null">is_verified = #{isVerified},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Mentor -->
+    <delete id="deleteMentorById">
+        DELETE FROM mentors WHERE id = #{id}
+    </delete>
+
+    <!-- Get Mentor by ID -->
+    <select id="getMentorById" resultMap="MentorResultMap">
+        SELECT * FROM mentors WHERE id = #{id}
+    </select>
+
+    <!-- Get Mentor by User ID -->
+    <select id="getMentorByUserId" resultMap="MentorResultMap">
+        SELECT * FROM mentors WHERE user_id = #{userId}
+    </select>
+
+    <!-- Get Mentor List with Pagination -->
+    <select id="getMentorList" resultMap="MentorResultMap">
+        SELECT * FROM mentors
+        WHERE status = 1
+        ORDER BY rating_avg DESC, view_count DESC, create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Search Mentors -->
+    <select id="searchMentors" resultMap="MentorResultMap">
+        SELECT * FROM mentors
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR institution LIKE CONCAT('%', #{keyword}, '%')
+            OR department LIKE CONCAT('%', #{keyword}, '%')
+            OR research_areas LIKE CONCAT('%', #{keyword}, '%')
+            OR keywords LIKE CONCAT('%', #{keyword}, '%')
+            OR bio LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY
+            CASE
+                WHEN name LIKE CONCAT('%', #{keyword}, '%') THEN 1
+                WHEN institution LIKE CONCAT('%', #{keyword}, '%') THEN 2
+                WHEN research_areas LIKE CONCAT('%', #{keyword}, '%') THEN 3
+                WHEN keywords LIKE CONCAT('%', #{keyword}, '%') THEN 4
+                WHEN department LIKE CONCAT('%', #{keyword}, '%') THEN 5
+                ELSE 6
+            END,
+            rating_avg DESC,
+            view_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Get Mentors by Institution -->
+    <select id="getMentorsByInstitution" resultMap="MentorResultMap">
+        SELECT * FROM mentors
+        WHERE status = 1 AND institution = #{institution}
+        ORDER BY rating_avg DESC, view_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Get Mentors by Research Area -->
+    <select id="getMentorsByResearchArea" resultMap="MentorResultMap">
+        SELECT * FROM mentors
+        WHERE status = 1 AND research_areas LIKE CONCAT('%', #{researchArea}, '%')
+        ORDER BY rating_avg DESC, view_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Total Mentors -->
+    <select id="countMentors" resultType="int">
+        SELECT COUNT(*) FROM mentors WHERE status = 1
+    </select>
+
+    <!-- Count Search Results -->
+    <select id="countSearchResults" resultType="int">
+        SELECT COUNT(*) FROM mentors
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR institution LIKE CONCAT('%', #{keyword}, '%')
+            OR department LIKE CONCAT('%', #{keyword}, '%')
+            OR research_areas LIKE CONCAT('%', #{keyword}, '%')
+            OR keywords LIKE CONCAT('%', #{keyword}, '%')
+            OR bio LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </select>
+
+    <!-- Increment View Count -->
+    <update id="incrementViewCount">
+        UPDATE mentors SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <!-- Update Mentor Rating -->
+    <update id="updateMentorRating">
+        UPDATE mentors
+        SET rating_avg = #{ratingAvg}, rating_count = #{ratingCount}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- Update Student Count -->
+    <update id="updateStudentCount">
+        UPDATE mentors SET current_students = #{currentStudents}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- Get Mentors with Filters -->
+    <select id="getMentorListWithFilters" resultMap="MentorResultMap">
+        SELECT * FROM mentors
+        WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                name LIKE CONCAT('%', #{keyword}, '%')
+                OR institution LIKE CONCAT('%', #{keyword}, '%')
+                OR department LIKE CONCAT('%', #{keyword}, '%')
+                OR research_areas LIKE CONCAT('%', #{keyword}, '%')
+                OR keywords LIKE CONCAT('%', #{keyword}, '%')
+                OR bio LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="institution != null and institution != ''">
+            AND institution LIKE CONCAT('%', #{institution}, '%')
+        </if>
+        <if test="researchArea != null and researchArea != ''">
+            AND research_areas LIKE CONCAT('%', #{researchArea}, '%')
+        </if>
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="department != null and department != ''">
+            AND department LIKE CONCAT('%', #{department}, '%')
+        </if>
+        <if test="acceptingStudents != null and acceptingStudents == true">
+            AND accepting_students = 1
+        </if>
+        ORDER BY rating_avg DESC, view_count DESC, create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Mentors with Filters -->
+    <select id="countMentorsWithFilters" resultType="int">
+        SELECT COUNT(*) FROM mentors
+        WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                name LIKE CONCAT('%', #{keyword}, '%')
+                OR institution LIKE CONCAT('%', #{keyword}, '%')
+                OR department LIKE CONCAT('%', #{keyword}, '%')
+                OR research_areas LIKE CONCAT('%', #{keyword}, '%')
+                OR keywords LIKE CONCAT('%', #{keyword}, '%')
+                OR bio LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="institution != null and institution != ''">
+            AND institution LIKE CONCAT('%', #{institution}, '%')
+        </if>
+        <if test="researchArea != null and researchArea != ''">
+            AND research_areas LIKE CONCAT('%', #{researchArea}, '%')
+        </if>
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="department != null and department != ''">
+            AND department LIKE CONCAT('%', #{department}, '%')
+        </if>
+        <if test="acceptingStudents != null and acceptingStudents == true">
+            AND accepting_students = 1
+        </if>
+    </select>
+
+</mapper>

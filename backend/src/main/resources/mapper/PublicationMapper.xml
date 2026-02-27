@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.PublicationMapper">
+
+    <!-- Result Map for Publication -->
+    <resultMap id="PublicationResultMap" type="com.mentor.entity.Publication">
+        <id property="id" column="id"/>
+        <result property="mentorId" column="mentor_id"/>
+        <result property="title" column="title"/>
+        <result property="authors" column="authors"/>
+        <result property="venue" column="venue"/>
+        <result property="year" column="year"/>
+        <result property="abstractText" column="abstract"/>
+        <result property="keywords" column="keywords"/>
+        <result property="doi" column="doi"/>
+        <result property="pdfUrl" column="pdf_url"/>
+        <result property="citationCount" column="citation_count"/>
+        <result property="publicationType" column="publication_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Publication -->
+    <insert id="insertPublication" parameterType="com.mentor.entity.Publication" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO publications (
+            mentor_id, title, authors, venue, year, abstract, keywords, doi,
+            pdf_url, citation_count, publication_type, create_time, update_time
+        ) VALUES (
+            #{mentorId}, #{title}, #{authors}, #{venue}, #{year}, #{abstractText}, #{keywords}, #{doi},
+            #{pdfUrl}, #{citationCount}, #{publicationType}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- Update Publication -->
+    <update id="updatePublication" parameterType="com.mentor.entity.Publication">
+        UPDATE publications
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="authors != null">authors = #{authors},</if>
+            <if test="venue != null">venue = #{venue},</if>
+            <if test="year != null">year = #{year},</if>
+            <if test="abstractText != null">abstract = #{abstractText},</if>
+            <if test="keywords != null">keywords = #{keywords},</if>
+            <if test="doi != null">doi = #{doi},</if>
+            <if test="pdfUrl != null">pdf_url = #{pdfUrl},</if>
+            <if test="citationCount != null">citation_count = #{citationCount},</if>
+            <if test="publicationType != null">publication_type = #{publicationType},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Publication -->
+    <delete id="deletePublicationById">
+        DELETE FROM publications WHERE id = #{id}
+    </delete>
+
+    <!-- Get Publication by ID -->
+    <select id="getPublicationById" resultMap="PublicationResultMap">
+        SELECT * FROM publications WHERE id = #{id}
+    </select>
+
+    <!-- Get Publications by Mentor ID -->
+    <select id="getPublicationsByMentorId" resultMap="PublicationResultMap">
+        SELECT * FROM publications
+        WHERE mentor_id = #{mentorId}
+        ORDER BY year DESC, citation_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Search Publications -->
+    <select id="searchPublications" resultMap="PublicationResultMap">
+        SELECT * FROM publications
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR authors LIKE CONCAT('%', #{keyword}, '%')
+           OR venue LIKE CONCAT('%', #{keyword}, '%')
+           OR keywords LIKE CONCAT('%', #{keyword}, '%')
+           OR abstract LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY year DESC, citation_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Get Publications by Year -->
+    <select id="getPublicationsByYear" resultMap="PublicationResultMap">
+        SELECT * FROM publications
+        WHERE year = #{year}
+        ORDER BY citation_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Publications by Mentor -->
+    <select id="countPublicationsByMentor" resultType="int">
+        SELECT COUNT(*) FROM publications WHERE mentor_id = #{mentorId}
+    </select>
+
+    <!-- Count Search Results -->
+    <select id="countSearchResults" resultType="int">
+        SELECT COUNT(*) FROM publications
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR authors LIKE CONCAT('%', #{keyword}, '%')
+           OR venue LIKE CONCAT('%', #{keyword}, '%')
+           OR keywords LIKE CONCAT('%', #{keyword}, '%')
+           OR abstract LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <!-- Get All Publications -->
+    <select id="getAllPublications" resultMap="PublicationResultMap">
+        SELECT * FROM publications
+        ORDER BY year DESC, citation_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count All Publications -->
+    <select id="countAllPublications" resultType="int">
+        SELECT COUNT(*) FROM publications
+    </select>
+
+</mapper>

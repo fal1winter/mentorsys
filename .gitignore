@@ -1,0 +1,27 @@
+# Java
+target/
+*.class
+*.jar
+!deploy/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyd
+deploy/semantic-search/__pycache__/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store

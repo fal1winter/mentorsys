@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.StudentMapper">
+
+    <!-- Result Map for Student -->
+    <resultMap id="StudentResultMap" type="com.mentor.entity.Student">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="currentInstitution" column="current_institution"/>
+        <result property="major" column="major"/>
+        <result property="degreeLevel" column="degree_level"/>
+        <result property="graduationYear" column="graduation_year"/>
+        <result property="gpa" column="gpa"/>
+        <result property="researchInterests" column="research_interests"/>
+        <result property="keywords" column="keywords"/>
+        <result property="bio" column="bio"/>
+        <result property="personalAbilities" column="personal_abilities"/>
+        <result property="expectedResearchDirection" column="expected_research_direction"/>
+        <result property="preferredMentorStyle" column="preferred_mentor_style"/>
+        <result property="availableTime" column="available_time"/>
+        <result property="programmingSkills" column="programming_skills"/>
+        <result property="publicationsCount" column="publications_count"/>
+        <result property="projectExperience" column="project_experience"/>
+        <result property="cvUrl" column="cv_url"/>
+        <result property="avatar" column="avatar"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Student -->
+    <insert id="insertStudent" parameterType="com.mentor.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO students (
+            user_id, name, email, phone, current_institution, major, degree_level,
+            graduation_year, gpa, research_interests, keywords, bio, cv_url, avatar,
+            status, create_time, update_time
+        ) VALUES (
+            #{userId}, #{name}, #{email}, #{phone}, #{currentInstitution}, #{major}, #{degreeLevel},
+            #{graduationYear}, #{gpa}, #{researchInterests}, #{keywords}, #{bio}, #{cvUrl}, #{avatar},
+            #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- Update Student -->
+    <update id="updateStudent" parameterType="com.mentor.entity.Student">
+        UPDATE students
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="currentInstitution != null">current_institution = #{currentInstitution},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="degreeLevel != null">degree_level = #{degreeLevel},</if>
+            <if test="graduationYear != null">graduation_year = #{graduationYear},</if>
+            <if test="gpa != null">gpa = #{gpa},</if>
+            <if test="researchInterests != null">research_interests = #{researchInterests},</if>
+            <if test="keywords != null">keywords = #{keywords},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="personalAbilities != null">personal_abilities = #{personalAbilities},</if>
+            <if test="expectedResearchDirection != null">expected_research_direction = #{expectedResearchDirection},</if>
+            <if test="preferredMentorStyle != null">preferred_mentor_style = #{preferredMentorStyle},</if>
+            <if test="availableTime != null">available_time = #{availableTime},</if>
+            <if test="programmingSkills != null">programming_skills = #{programmingSkills},</if>
+            <if test="publicationsCount != null">publications_count = #{publicationsCount},</if>
+            <if test="projectExperience != null">project_experience = #{projectExperience},</if>
+            <if test="cvUrl != null">cv_url = #{cvUrl},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Student -->
+    <delete id="deleteStudentById">
+        DELETE FROM students WHERE id = #{id}
+    </delete>
+
+    <!-- Get Student by ID -->
+    <select id="getStudentById" resultMap="StudentResultMap">
+        SELECT * FROM students WHERE id = #{id}
+    </select>
+
+    <!-- Get Student by User ID -->
+    <select id="getStudentByUserId" resultMap="StudentResultMap">
+        SELECT * FROM students WHERE user_id = #{userId}
+    </select>
+
+    <!-- Get Student List with Pagination -->
+    <select id="getStudentList" resultMap="StudentResultMap">
+        SELECT * FROM students
+        WHERE status = 1
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Search Students -->
+    <select id="searchStudents" resultMap="StudentResultMap">
+        SELECT * FROM students
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR current_institution LIKE CONCAT('%', #{keyword}, '%')
+            OR major LIKE CONCAT('%', #{keyword}, '%')
+            OR research_interests LIKE CONCAT('%', #{keyword}, '%')
+            OR keywords LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Total Students -->
+    <select id="countStudents" resultType="int">
+        SELECT COUNT(*) FROM students WHERE status = 1
+    </select>
+
+    <!-- Count Search Results -->
+    <select id="countSearchResults" resultType="int">
+        SELECT COUNT(*) FROM students
+        WHERE status = 1
+        AND (
+            name LIKE CONCAT('%', #{keyword}, '%')
+            OR current_institution LIKE CONCAT('%', #{keyword}, '%')
+            OR major LIKE CONCAT('%', #{keyword}, '%')
+            OR research_interests LIKE CONCAT('%', #{keyword}, '%')
+            OR keywords LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </select>
+
+    <!-- Get Students by Mentor ID (students who have accepted applications with this mentor) -->
+    <select id="getStudentsByMentorId" resultMap="StudentResultMap">
+        SELECT s.* FROM students s
+        INNER JOIN (
+            SELECT student_id, MAX(response_time) as latest_response_time
+            FROM applications
+            WHERE mentor_id = #{mentorId}
+            AND status = 'accepted'
+            GROUP BY student_id
+        ) a ON s.id = a.student_id
+        WHERE s.status = 1
+        ORDER BY a.latest_response_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Students by Mentor ID -->
+    <select id="countStudentsByMentor" resultType="int">
+        SELECT COUNT(DISTINCT s.id) FROM students s
+        INNER JOIN applications a ON s.id = a.student_id
+        WHERE a.mentor_id = #{mentorId}
+        AND a.status = 'accepted'
+        AND s.status = 1
+    </select>
+
+    <!-- Get Students with Filters -->
+    <select id="getStudentListWithFilters" resultMap="StudentResultMap">
+        SELECT * FROM students
+        WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                name LIKE CONCAT('%', #{keyword}, '%')
+                OR current_institution LIKE CONCAT('%', #{keyword}, '%')
+                OR major LIKE CONCAT('%', #{keyword}, '%')
+                OR research_interests LIKE CONCAT('%', #{keyword}, '%')
+                OR keywords LIKE CONCAT('%', #{keyword}, '%')
+                OR bio LIKE CONCAT('%', #{keyword}, '%')
+                OR programming_skills LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="institution != null and institution != ''">
+            AND current_institution LIKE CONCAT('%', #{institution}, '%')
+        </if>
+        <if test="major != null and major != ''">
+            AND major LIKE CONCAT('%', #{major}, '%')
+        </if>
+        <if test="degreeLevel != null and degreeLevel != ''">
+            AND degree_level = #{degreeLevel}
+        </if>
+        <if test="researchInterest != null and researchInterest != ''">
+            AND research_interests LIKE CONCAT('%', #{researchInterest}, '%')
+        </if>
+        <if test="skill != null and skill != ''">
+            AND programming_skills LIKE CONCAT('%', #{skill}, '%')
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Count Students with Filters -->
+    <select id="countStudentsWithFilters" resultType="int">
+        SELECT COUNT(*) FROM students
+        WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                name LIKE CONCAT('%', #{keyword}, '%')
+                OR current_institution LIKE CONCAT('%', #{keyword}, '%')
+                OR major LIKE CONCAT('%', #{keyword}, '%')
+                OR research_interests LIKE CONCAT('%', #{keyword}, '%')
+                OR keywords LIKE CONCAT('%', #{keyword}, '%')
+                OR bio LIKE CONCAT('%', #{keyword}, '%')
+                OR programming_skills LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="institution != null and institution != ''">
+            AND current_institution LIKE CONCAT('%', #{institution}, '%')
+        </if>
+        <if test="major != null and major != ''">
+            AND major LIKE CONCAT('%', #{major}, '%')
+        </if>
+        <if test="degreeLevel != null and degreeLevel != ''">
+            AND degree_level = #{degreeLevel}
+        </if>
+        <if test="researchInterest != null and researchInterest != ''">
+            AND research_interests LIKE CONCAT('%', #{researchInterest}, '%')
+        </if>
+        <if test="skill != null and skill != ''">
+            AND programming_skills LIKE CONCAT('%', #{skill}, '%')
+        </if>
+    </select>
+
+</mapper>

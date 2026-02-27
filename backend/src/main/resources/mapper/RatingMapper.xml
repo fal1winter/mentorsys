@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.RatingMapper">
+
+    <!-- Result Map for Rating -->
+    <resultMap id="RatingResultMap" type="com.mentor.entity.Rating">
+        <id property="id" column="id"/>
+        <result property="mentorId" column="mentor_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="rating" column="rating"/>
+        <result property="comment" column="comment"/>
+        <result property="aspects" column="aspects"/>
+        <result property="isAnonymous" column="is_anonymous"/>
+        <result property="isVerified" column="is_verified"/>
+        <result property="helpfulCount" column="helpful_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Rating -->
+    <insert id="insertRating" parameterType="com.mentor.entity.Rating" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ratings (
+            mentor_id, student_id, rating, comment, aspects, is_anonymous,
+            is_verified, helpful_count, create_time, update_time
+        ) VALUES (
+            #{mentorId}, #{studentId}, #{rating}, #{comment}, #{aspects}, #{isAnonymous},
+            #{isVerified}, #{helpfulCount}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <!-- Update Rating -->
+    <update id="updateRating" parameterType="com.mentor.entity.Rating">
+        UPDATE ratings
+        <set>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="comment != null">comment = #{comment},</if>
+            <if test="aspects != null">aspects = #{aspects},</if>
+            <if test="isAnonymous != null">is_anonymous = #{isAnonymous},</if>
+            <if test="isVerified != null">is_verified = #{isVerified},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Rating -->
+    <delete id="deleteRatingById">
+        DELETE FROM ratings WHERE id = #{id}
+    </delete>
+
+    <!-- Get Rating by ID -->
+    <select id="getRatingById" resultMap="RatingResultMap">
+        SELECT * FROM ratings WHERE id = #{id}
+    </select>
+
+    <!-- Get Rating by Student and Mentor -->
+    <select id="getRatingByStudentAndMentor" resultMap="RatingResultMap">
+        SELECT * FROM ratings
+        WHERE student_id = #{studentId} AND mentor_id = #{mentorId}
+        LIMIT 1
+    </select>
+
+    <!-- Get Ratings by Mentor ID -->
+    <select id="getRatingsByMentorId" resultMap="RatingResultMap">
+        SELECT * FROM ratings
+        WHERE mentor_id = #{mentorId}
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Get Ratings by Student ID -->
+    <select id="getRatingsByStudentId" resultMap="RatingResultMap">
+        SELECT * FROM ratings
+        WHERE student_id = #{studentId}
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Increment Helpful Count -->
+    <update id="incrementHelpfulCount">
+        UPDATE ratings SET helpful_count = helpful_count + 1 WHERE id = #{id}
+    </update>
+
+    <!-- Count Ratings by Mentor -->
+    <select id="countRatingsByMentor" resultType="int">
+        SELECT COUNT(*) FROM ratings WHERE mentor_id = #{mentorId}
+    </select>
+
+    <!-- Get Average Rating by Mentor -->
+    <select id="getAverageRatingByMentor" resultType="double">
+        SELECT AVG(rating) FROM ratings WHERE mentor_id = #{mentorId}
+    </select>
+
+</mapper>

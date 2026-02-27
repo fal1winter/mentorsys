@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mentor.mapper.KeywordMapper">
+
+    <!-- Result Map for Keyword -->
+    <resultMap id="KeywordResultMap" type="com.mentor.entity.Keyword">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="category" column="category"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- Insert Keyword -->
+    <insert id="insertKeyword" parameterType="com.mentor.entity.Keyword" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO keywords (name, description, category, create_time, update_time)
+        VALUES (#{name}, #{description}, #{category}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- Update Keyword -->
+    <update id="updateKeyword" parameterType="com.mentor.entity.Keyword">
+        UPDATE keywords
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="category != null">category = #{category},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete Keyword -->
+    <delete id="deleteKeywordById">
+        DELETE FROM keywords WHERE id = #{id}
+    </delete>
+
+    <!-- Get Keyword by ID -->
+    <select id="getKeywordById" resultMap="KeywordResultMap">
+        SELECT * FROM keywords WHERE id = #{id}
+    </select>
+
+    <!-- Get Keyword by Name -->
+    <select id="getKeywordByName" resultMap="KeywordResultMap">
+        SELECT * FROM keywords WHERE name = #{name}
+    </select>
+
+    <!-- Get Keyword List with Pagination -->
+    <select id="getKeywordList" resultMap="KeywordResultMap">
+        SELECT * FROM keywords
+        ORDER BY category, name
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Search Keywords -->
+    <select id="searchKeywords" resultMap="KeywordResultMap">
+        SELECT * FROM keywords
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+           OR category LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY name
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- Get Keywords by Category -->
+    <select id="getKeywordsByCategory" resultMap="KeywordResultMap">
+        SELECT * FROM keywords
+        WHERE category = #{category}
+        ORDER BY name
+    </select>
+
+    <!-- Count Total Keywords -->
+    <select id="countKeywords" resultType="int">
+        SELECT COUNT(*) FROM keywords
+    </select>
+
+    <!-- Count Search Results -->
+    <select id="countSearchResults" resultType="int">
+        SELECT COUNT(*) FROM keywords
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+           OR category LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <!-- Get All Keywords (no pagination) -->
+    <select id="getAllKeywords" resultMap="KeywordResultMap">
+        SELECT * FROM keywords
+        ORDER BY category, name
+    </select>
+
+</mapper>
